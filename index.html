@@ -3,271 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Binary Search Tree - Premium Version</title>
+    <title>BST CRUD Management System</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #4CAF50;
-            --primary-dark: #2E7D32;
-            --accent: #FF5252;
-            --bg: #F0F4F8;
-            --glass: rgba(255, 255, 255, 0.9);
+            --primary: #2E7D32;
+            --secondary: #FB8C00;
+            --danger: #D32F2F;
+            --bg: #F4F7F6;
         }
+        body { font-family: 'Kanit', sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .app-container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 1000px; }
+        h1 { text-align: center; color: var(--primary); margin-bottom: 25px; }
+        
+        /* CRUD Panel */
+        .crud-controls { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
+        input { padding: 12px; border: 2px solid #DDD; border-radius: 10px; width: 120px; outline: none; font-size: 16px; }
+        button { padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; color: white; font-weight: 600; transition: 0.3s; }
+        
+        .btn-create { background: var(--primary); } /* Create */
+        .btn-delete { background: var(--danger); }  /* Delete */
+        .btn-reset { background: #757575; }           /* Reset */
 
-        body {
-            font-family: 'Kanit', sans-serif;
-            background: var(--bg);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #333;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .header h1 {
-            color: var(--primary-dark);
-            margin: 0;
-            font-size: 2.2rem;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-        }
-
-        .container {
-            background: var(--glass);
-            backdrop-filter: blur(10px);
-            padding: 30px;
-            border-radius: 24px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 950px;
-            border: 1px solid rgba(255,255,255,0.5);
-        }
-
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 30px;
-        }
-
-        input {
-            padding: 14px 20px;
-            border: 2px solid #E0E7FF;
-            border-radius: 12px;
-            width: 180px;
-            font-size: 1rem;
-            outline: none;
-            transition: 0.3s;
-        }
-
-        input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.1); }
-
-        button {
-            padding: 14px 28px;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 1rem;
-            transition: 0.3s;
-            color: white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .btn-insert { background: linear-gradient(135deg, #66BB6A, #43A047); }
-        .btn-insert:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(67, 160, 71, 0.3); }
-
-        .btn-reset { background: linear-gradient(135deg, #FF5252, #D32F2F); }
-        .btn-reset:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(211, 47, 47, 0.3); }
-
-        #tree-canvas {
-            position: relative;
-            width: 100%;
-            height: 480px;
-            background: white;
-            border-radius: 18px;
-            overflow: hidden;
-            border: 1px solid #EDF2F7;
-        }
-
-        .node {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(145deg, #81C784, #2E7D32);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: absolute;
-            font-weight: 600;
-            font-size: 1.1rem;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-            z-index: 5;
-            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border: 2px solid white;
-        }
-
+        /* Tree Display (Read) */
+        #tree-area { position: relative; width: 100%; height: 500px; background: #FFF; border: 1px solid #EEE; border-radius: 15px; overflow: hidden; }
+        .node { width: 45px; height: 45px; background: linear-gradient(145deg, #A5D6A7, #2E7D32); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: absolute; font-weight: bold; z-index: 10; border: 2px solid white; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: 0.5s; }
         svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        line { stroke: #A5D6A7; stroke-width: 3; stroke-linecap: round; }
+        line { stroke: #81C784; stroke-width: 3; }
 
-        .traversal-section {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin-top: 35px;
-        }
-
-        .t-card {
-            padding: 20px;
-            border-radius: 18px;
-            text-align: center;
-            border-top: 5px solid;
-            background: white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-        }
-
-        .pre { border-color: #4CAF50; }
-        .ino { border-color: #FFA726; }
-        .post { border-color: #EC407A; }
-
-        .t-card h4 { margin: 0 0 12px 0; color: #555; font-size: 1.1rem; }
-        .t-card p { margin: 0; font-size: 0.95rem; color: #2D3748; word-break: break-all; min-height: 1.2rem; }
-
-        .footer { margin-top: 40px; color: #718096; font-size: 0.9rem; }
+        /* Status & Traversal */
+        .status-panel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 25px; }
+        .info-card { padding: 15px; border-radius: 12px; text-align: center; background: #F9F9F9; border-bottom: 4px solid var(--primary); }
+        .info-card h4 { margin: 0 0 10px 0; color: #555; }
+        .info-card p { margin: 0; font-size: 14px; color: var(--primary); font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>Binary Search Tree Visualization</h1>
-        <p>Midterm Project | Data Structures</p>
+<div class="app-container">
+    <h1>BST CRUD Management</h1>
+    
+    <div class="crud-controls">
+        <input type="number" id="inputValue" placeholder="ระบุตัวเลข">
+        <button class="btn-create" onclick="handleInsert()">➕ Create (Insert)</button>
+        <button class="btn-delete" onclick="handleDelete()">🗑️ Delete (Remove)</button>
+        <button class="btn-reset" onclick="handleReset()">🔄 Reset</button>
     </div>
 
-    <div class="container">
-        <div class="controls">
-            <input type="number" id="valIn" placeholder="ใส่ตัวเลข...">
-            <button class="btn-insert" onclick="insertNode()">+ เพิ่มข้อมูล (Insert)</button>
-            <button class="btn-reset" onclick="resetTree()">ล้างข้อมูล (Reset)</button>
-        </div>
-
-        <div id="tree-canvas">
-            <svg id="svg-line-layer"></svg>
-        </div>
-
-        <div class="traversal-section">
-            <div class="t-card pre">
-                <h4>Preorder</h4>
-                <p id="pre-res">-</p>
-            </div>
-            <div class="t-card ino">
-                <h4>Inorder</h4>
-                <p id="ino-res">-</p>
-            </div>
-            <div class="t-card post">
-                <h4>Postorder</h4>
-                <p id="post-res">-</p>
-            </div>
-        </div>
+    <div id="tree-area">
+        <svg id="line-layer"></svg>
     </div>
 
-    <div class="footer">
-        จัดทำโดย: hamirusananee-cyber
+    <div class="status-panel">
+        <div class="info-card"><h4>Preorder (Read)</h4><p id="pre-out">-</p></div>
+        <div class="info-card"><h4>Inorder (Read)</h4><p id="ino-out">-</p></div>
+        <div class="info-card"><h4>Postorder (Read)</h4><p id="post-out">-</p></div>
     </div>
+</div>
 
-    <script>
-        class Node {
-            constructor(v) { this.v = v; this.left = null; this.right = null; this.x = 0; this.y = 0; }
+<script>
+    class Node {
+        constructor(v) { this.v = v; this.left = null; this.right = null; this.x = 0; this.y = 0; }
+    }
+    let root = null;
+    const area = document.getElementById('tree-area');
+    const svg = document.getElementById('line-layer');
+
+    // CRUD: Create
+    function handleInsert() {
+        const v = parseInt(document.getElementById('inputValue').value);
+        if (isNaN(v)) return;
+        root = insert(root, v);
+        document.getElementById('inputValue').value = '';
+        render();
+    }
+
+    function insert(node, v) {
+        if (!node) return new Node(v);
+        if (v < node.v) node.left = insert(node.left, v);
+        else if (v > node.v) node.right = insert(node.right, v);
+        return node;
+    }
+
+    // CRUD: Delete
+    function handleDelete() {
+        const v = parseInt(document.getElementById('inputValue').value);
+        if (isNaN(v)) return;
+        root = remove(root, v);
+        document.getElementById('inputValue').value = '';
+        render();
+    }
+
+    function remove(node, v) {
+        if (!node) return null;
+        if (v < node.v) node.left = remove(node.left, v);
+        else if (v > node.v) node.right = remove(node.right, v);
+        else {
+            if (!node.left) return node.right;
+            if (!node.right) return node.left;
+            let minNode = node.right;
+            while (minNode.left) minNode = minNode.left;
+            node.v = minNode.v;
+            node.right = remove(node.right, minNode.v);
         }
-        let root = null;
-        const canvas = document.getElementById('tree-canvas');
-        const svgLayer = document.getElementById('svg-line-layer');
+        return node;
+    }
 
-        function insertNode() {
-            const el = document.getElementById('valIn');
-            const v = parseInt(el.value);
-            if (isNaN(v)) return;
-            root = add(root, v);
-            el.value = '';
-            el.focus();
-            updateUI();
-        }
+    // CRUD: Read & Update UI
+    function render() {
+        document.querySelectorAll('.node').forEach(n => n.remove());
+        svg.innerHTML = '';
+        if (!root) return updateTraversals();
+        calc(root, area.offsetWidth / 2, 50, area.offsetWidth / 4);
+        draw(root);
+        updateTraversals();
+    }
 
-        function add(n, v) {
-            if (!n) return new Node(v);
-            if (v < n.v) n.left = add(n.left, v);
-            else if (v > n.v) n.right = add(n.right, v);
-            return n;
-        }
+    function calc(n, x, y, s) {
+        if (!n) return;
+        n.x = x; n.y = y;
+        if (n.left) calc(n.left, x - s, y + 80, s / 2);
+        if (n.right) calc(n.right, x + s, y + 80, s / 2);
+    }
 
-        function updateUI() {
-            document.querySelectorAll('.node').forEach(n => n.remove());
-            svgLayer.innerHTML = '';
-            if (!root) return;
+    function draw(n) {
+        if (!n) return;
+        if (n.left) drawLine(n.x, n.y, n.left.x, n.left.y);
+        if (n.right) drawLine(n.x, n.y, n.right.x, n.right.y);
+        const d = document.createElement('div');
+        d.className = 'node'; d.innerText = n.v;
+        d.style.left = (n.x - 22) + 'px'; d.style.top = (n.y - 22) + 'px';
+        area.appendChild(d);
+        draw(n.left); draw(n.right);
+    }
 
-            const width = canvas.offsetWidth;
-            calcPos(root, width / 2, 50, width / 4);
-            draw(root);
-            updateTraversals();
-        }
+    function drawLine(x1, y1, x2, y2) {
+        const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        l.setAttribute("x1", x1); l.setAttribute("y1", y1);
+        l.setAttribute("x2", x2); l.setAttribute("y2", y2);
+        svg.appendChild(l);
+    }
 
-        function calcPos(n, x, y, space) {
+    function updateTraversals() {
+        let pre = [], ino = [], post = [];
+        function walk(n) {
             if (!n) return;
-            n.x = x; n.y = y;
-            const nextSpace = Math.max(space / 1.7, 30);
-            if (n.left) calcPos(n.left, x - space, y + 85, nextSpace);
-            if (n.right) calcPos(n.right, x + space, y + 85, nextSpace);
+            pre.push(n.v); walk(n.left);
+            ino.push(n.v); walk(n.right);
+            post.push(n.v);
         }
+        walk(root);
+        document.getElementById('pre-out').innerText = pre.join(' → ') || '-';
+        document.getElementById('ino-out').innerText = ino.join(' → ') || '-';
+        document.getElementById('post-out').innerText = post.join(' → ') || '-';
+    }
 
-        function draw(n) {
-            if (!n) return;
-            if (n.left) drawLink(n.x, n.y, n.left.x, n.left.y);
-            if (n.right) drawLink(n.x, n.y, n.right.x, n.right.y);
-
-            const div = document.createElement('div');
-            div.className = 'node';
-            div.innerText = n.v;
-            div.style.left = (n.x - 24) + 'px';
-            div.style.top = (n.y - 24) + 'px';
-            canvas.appendChild(div);
-
-            draw(n.left);
-            draw(n.right);
-        }
-
-        function drawLink(x1, y1, x2, y2) {
-            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-            line.setAttribute("x1", x1); line.setAttribute("y1", y1);
-            line.setAttribute("x2", x2); line.setAttribute("y2", y2);
-            svgLayer.appendChild(line);
-        }
-
-        function updateTraversals() {
-            let pre = [], ino = [], pos = [];
-            function walk(n) {
-                if(!n) return;
-                pre.push(n.v); walk(n.left);
-                ino.push(n.v); walk(n.right);
-                pos.push(n.v);
-            }
-            walk(root);
-            document.getElementById('pre-res').innerText = pre.join(' → ');
-            document.getElementById('ino-res').innerText = ino.join(' → ');
-            document.getElementById('post-res').innerText = pos.join(' → ');
-        }
-
-        function resetTree() {
-            root = null;
-            updateUI();
-            document.getElementById('pre-res').innerText = '-';
-            document.getElementById('ino-res').innerText = '-';
-            document.getElementById('post-res').innerText = '-';
-        }
-    </script>
+    function handleReset() { root = null; render(); }
+</script>
 </body>
 </html>
